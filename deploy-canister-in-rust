@@ -1,0 +1,24 @@
+use interledger_node_api::api::{ConnectorsApi, ConnectorsApiClient};
+use interledger_packet::Address;
+use tonic::Request;
+
+fn deploy_connector(api: ConnectorsApiClient, ilp_address: Address, backend: String) {
+  let connector_info = api.create_connector().body(
+    json!({
+      "ilp_address": ilp_address,
+      "backend": backend,
+    }),
+  );
+  let response = api.create_connector(Request::new(connector_info)).await;
+  match response {
+    Ok(res) => println!("Connector successfully deployed: {:?}", res),
+    Err(e) => println!("Error deploying connector: {}", e),
+  }
+}
+
+fn main() {
+  let api = ConnectorsApiClient::new("http://localhost:7770");
+  let ilp_address = "example.connector".parse().unwrap();
+  let backend = "example_backend".to_string();
+  deploy_connector(api, ilp_address, backend).await;
+}
